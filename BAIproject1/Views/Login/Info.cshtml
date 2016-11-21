@@ -1,0 +1,75 @@
+﻿@model BAIproject1.Models.User
+
+@{
+    ViewBag.Title = "Info";
+}
+
+<h2>Info</h2>
+
+<div>
+    <h4>User</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Password)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Password)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SuccessfulLogin)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SuccessfulLogin)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FailedLogin)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FailedLogin)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Activated)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Activated)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FailedAttempts)
+        </dt>
+
+        <dd>
+            @*@Html.DisplayFor(model => model.FailedAttempts)*@
+            @ViewBag.FailedAttempts.ToString()
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MaxFailedAttempts)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MaxFailedAttempts)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

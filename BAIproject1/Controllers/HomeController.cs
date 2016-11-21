@@ -9,25 +9,221 @@ namespace BAIproject1.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResult Index()
+        public ActionResult Index(int editId = -1)
         {
-            List<Message> messages;
+            List<Message> messages = null;
+            List<User> users = null;
+            List<string> mod = new List<string>();
+            List<string> mod2 = new List<string>();
+            User user = null;
+            List<AllowedMessages> am = null;
+
+            string username = "";
+            try
+            {
+                username = Request.Cookies["username"].Value;
+            }
+            catch (Exception)
+            {
+            }
             using (BaiDbContext ctx = new BaiDbContext())
             {
-                
-                ctx.Users.Add(new User() { Name = "admin", Password = "admin", Messages = new List<Message>() { new Message() { Text = "nothing" } } });
-                
-                ctx.SaveChanges();
-                messages = ctx.Messages.ToList();
+                try
+                {
+                    user = ctx.Users.Single(u => u.Name == username);
+                }catch (Exception)
+                {                                        
+                }
+                am = ctx.AllowedMessages.ToList();
+                users = ctx.Users.ToList();
+                messages = ctx.Messages.Include("user").ToList();
             }
+            List<SelectListItem> selectList = new List<SelectListItem>();
+            foreach (var item in users)
+            {
+                selectList.Add(new SelectListItem() { Text = item.Name, Value = item.Id + "" });
+            }
+            ViewBag.users = selectList;
+            if (editId != -1)
+            {
+                ViewBag.textEdit = messages.Single(m => m.Id == editId).Text;
+                ViewBag.editId = editId;
+            }
+            foreach (var m in messages)
+            {
+                if (user == null)
+                {
+                    mod.Add("hidden=\"hidden\"");
+                    mod2.Add("hidden=\"hidden\"");
+                }
+                else if (user.Id == m.UserId)
+                {
+                    mod.Add("");
+                    mod2.Add("");
+                }
+                else
+                {
+                    mod.Add("hidden=\"hidden\"");
+                    if(am.Any(a => a.MessageId == m.Id && a.UserId==user.Id))
+                        mod2.Add("");
+                    else
+                        mod2.Add("hidden=\"hidden\"");
+                }
+            }
+            ViewBag.mod = mod;
+            ViewBag.mod2 = mod2;
             return View(messages);
         }
 
-        [HttpPost]
+        
         public ActionResult Create(string text)
         {
+            string username = "";
+            try
+            {
+                username = Request.Cookies["username"].Value;
+            }
+            catch (Exception)
+            {
+            }            
+            using (BaiDbContext ctx = new BaiDbContext())
+            {
+                if (ctx.Users.Any<User>(u => u.Name == username))
+                {
+                    User user = ctx.Users.Single(u => u.Name == username);
+                    user.Messages.Add(new Message() { Text = text });
+                    ctx.Entry<User>(user).State = System.Data.Entity.EntityState.Modified;
+                    ctx.SaveChanges();
+                }
+            }
+                return RedirectToAction("index");
+        }
 
+        [HttpGet]
+        public ActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Login(string login, string password)
+        {
+            using (BaiDbContext ctx = new BaiDbContext()) {
+                if (ctx.Users.Any<User>(u => u.Name == login && u.Password == password))
+                {
+                    HttpCookie cookie = new HttpCookie("username",login);
+                    Response.Cookies.Add(cookie);
+                    return RedirectToAction("index");
+                }
+            }
+            return View();
+        }
+
+        [HttpGet]
+        public ActionResult Delete(int id)
+        {
+            if (Request.Cookies["username"] == null)
+                return RedirectToAction("index");
+            string username = Request.Cookies["username"].Value;
+            using (BaiDbContext ctx = new BaiDbContext())
+            {
+                User user = ctx.Users.Single(u => u.Name == username);
+                Message message = ctx.Messages.Include("user").Where(m => m.Id == id).First();
+
+                if (message.User.Name == username)
+                {
+                    ctx.Entry(message).State = System.Data.Entity.EntityState.Deleted;
+                    ctx.SaveChanges();
+                }
+            }
+                return RedirectToAction("index");
+        }
+
+        [HttpGet]
+        public ActionResult Permission(string permission, int messageId = -1, int userId = -1)
+        {
+            
+            if (messageId == -1 || userId == -1)
+            {
+                return RedirectToAction("index");
+            }
+
+            string username = "";
+            try
+            {
+                username = Request.Cookies["username"].Value;
+            }
+            catch (Exception)
+            {
+            }
+
+            using (BaiDbContext ctx = new BaiDbContext())
+            {                
+                int ownerId = ctx.Users.Single(u => u.Name == username).Id;
+                if(!ctx.Messages.Any(m => m.UserId == ownerId && m.Id == messageId))
+                {
+                    return RedirectToAction("index");
+                }
+                
+                
+                if (permission == "grant")
+                {
+                    ctx.AllowedMessages.Add(new AllowedMessages { MessageId = messageId, UserId = userId});
+                    ctx.SaveChanges();
+                }
+                else if (permission == "deny")
+                {
+                    AllowedMessages am = null;
+                    try
+                    {
+                        am = ctx.AllowedMessages.Single(u => u.UserId == userId && u.MessageId == messageId);
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
+                    
+                    if(am == null)
+                        return RedirectToAction("Index");
+
+                    ctx.Entry(am).State = System.Data.Entity.EntityState.Deleted;
+                    ctx.SaveChanges();
+                }
+            }            
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public ActionResult Edit(string text, int id = -1)
+        {
+            if(id == -1)
+                return RedirectToAction("index");
+            if (Request.Cookies["username"] == null)
+                return RedirectToAction("index");
+            string username = Request.Cookies["username"].Value;
+            using (BaiDbContext ctx = new BaiDbContext())
+            {
+                User user = ctx.Users.Single(u => u.Name == username);
+                Message message = ctx.Messages.Include("user").Where(m => m.Id == id).First();
+                message.Text = text;
+
+                if (message.User.Name == username ||
+                    ctx.AllowedMessages.Any(m => m.MessageId == id && m.UserId == user.Id))
+                {
+                    ctx.Entry(message).State = System.Data.Entity.EntityState.Modified;
+                    ctx.SaveChanges();
+                }
+            }
             return RedirectToAction("index");
         }
+        public ActionResult Logout()
+        {
+            if (Request.Cookies["username"] != null)
+            {
+                Response.Cookies["username"].Expires = DateTime.Now.AddDays(-1);
+            }
+            return RedirectToAction("index");
+        }
+
     }
 }

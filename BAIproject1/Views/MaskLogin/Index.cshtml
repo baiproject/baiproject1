@@ -1,0 +1,79 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+
+<form action="/masklogin/index" method="get" name="aaa">
+
+    <div class="form-horizontal">
+        <h4>Wpisz login</h4>
+        <hr />
+        <div class="form-group">
+            @Html.ValidationMessage("error", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            @Html.ValidationMessage("blocked", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            @Html.ValidationMessage("attempts", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            @Html.ValidationMessage("delay", new { @class = "text-danger" })
+        </div>
+
+        @if (ViewBag.PasswordMask == null)
+        {
+            <div class="form-group">
+                @Html.Label("username", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.TextBox("login")
+                </div>
+            </div>
+        }
+        @*<div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Logowanie" class="btn btn-default" />
+                </div>
+            </div>*@
+
+        @if (ViewBag.PasswordMask != null)
+        {
+            <table class="table">
+                <tr>
+                    @for (int i = 0; i < ViewBag.PasswordMask.Count; i++)
+                    {
+                        <th>@(i + 1)</th>
+                    }
+                </tr>
+                <tr>
+
+                    @for (int i = 0; i < ViewBag.PasswordMask.Count; i++)
+
+                    {
+                        if (ViewBag.PasswordMask[i])
+                        {
+                            <td>
+                                <input type="text" size="1" maxlength="1" name="@("p"+i)" />
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                <input type="text" disabled="disabled" size="1" name="@("p"+i)" />
+                            </td>
+                        }
+                    }
+                </tr>
+            </table>
+        }
+        <input type="submit" value="zaloguj" class="btn btn-default" />
+
+
+
+    </div>
+</form>
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>

@@ -4,11 +4,10 @@
     ViewBag.Title = "Index";
 }
 
-<h2>Index</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
+
+
+
 <table class="table">
     <tr>
         <th>
@@ -20,7 +19,7 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
+@*@foreach (var item in Model) {
     <tr>
         <td>
             @Html.DisplayFor(modelItem => item.User.Name)
@@ -29,26 +28,55 @@
             @Html.DisplayFor(modelItem => item.Text)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
+            @Html.ActionLink("Edit", "index", new { editid=item.Id }) |            
             @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+            <form action="Home/Permission">
+                <input name="messageId" hidden="hidden" value="@item.Id" />
+                @Html.DropDownList("userId", (List<SelectListItem>)(ViewBag.users))
+                <button name = "permission" type="submit" value="grant">daj uprawnienia</button>
+                <button name = "permission" type="submit" value="deny">zabierz uprawnienia</button>
+            </form>            
         </td>
     </tr>
-}
+}*@
+
+    @for(int i = 0; i < Model.Count(); i++)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => Model.ElementAt(i).User.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => Model.ElementAt(i).Text)
+            </td>
+            <td>
+                @*@Html.ActionLink("Edit", "index", new { editid = Model.ElementAt(i).Id }, new { hidden = ViewBag.mod2[i] }) 
+                @Html.ActionLink("Delete", "Delete", new { id = Model.ElementAt(i).Id }, new { hidden = ViewBag.mod2[i] })*@
+                <a href="/?editid=@Model.ElementAt(i).Id" @ViewBag.mod2[i]>Edit</a>
+                <a href="/Home/Delete/@Model.ElementAt(i).Id" @ViewBag.mod[i]>Delete</a>
+                <form action="Home/Permission" @ViewBag.mod[i]>
+                    <input name="messageId" hidden="hidden" value="@Model.ElementAt(i).Id" />
+                    @Html.DropDownList("userId", (List<SelectListItem>)(ViewBag.users))
+                    <button name="permission" type="submit" value="grant">daj uprawnienia</button>
+                    <button name="permission" type="submit" value="deny">zabierz uprawnienia</button>
+                </form>
+            </td>
+        </tr>
+    }
 
 </table>
 
 
-@using (Html.BeginForm("Create","Home"))
+@using (Html.BeginForm("Create","Home",FormMethod.Get))
 {
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()*@
 
     <div class="form-horizontal">
-        <h4>Message</h4>
+        <h4>Dodawanie</h4>
         <hr />
         @Html.ValidationSummary(true, "text", new { @class = "text-danger" })
         <div class="form-group">
-            @Html.Label("text", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.Label("Wiadomość do dodania", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.Editor("text", new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessage("text", "", new { @class = "text-danger" })
@@ -59,8 +87,28 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" value="Dodaj" class="btn btn-default" />
             </div>
         </div>
     </div>
 }
+
+
+<form action="home/edit/" method="get">
+
+    <div class="form-horizontal">
+        <h4>Edycja</h4>
+        <div class="form-group">
+            @Html.Label("Wiadomość do edytowania", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <input value="@ViewBag.textEdit" name="text" class = "form-control">
+                <input hidden="hidden" name="id" value="@ViewBag.editId" />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Edytuj" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+</form>

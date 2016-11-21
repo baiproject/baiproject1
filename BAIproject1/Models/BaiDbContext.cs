@@ -11,5 +11,6 @@ namespace BAIproject1.Models
         public DbSet<Message> Messages { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<AllowedMessages> AllowedMessages { get; set; }
+        public DbSet<Mask> Masks { get; set; }
     }
 }
