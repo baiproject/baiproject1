@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 
@@ -90,7 +92,7 @@ namespace BAIproject1.Controllers
         }
         [AllowAnonymous]
         public ActionResult Info()
-        {            
+        {
             User user = null;
 
             if (!Request.Cookies.AllKeys.Contains("token") || !Request.Cookies.AllKeys.Contains("username"))
@@ -107,7 +109,7 @@ namespace BAIproject1.Controllers
                 user = ctx.Users.Single(u => u.Name == username);
                 ViewBag.SuccessfulLogin = user.SuccessfulLogin;
                 ViewBag.FailedAttempts = user.FailedAttempts;
-                user.SuccessfulLogin = DateTime.Now;                
+                user.SuccessfulLogin = DateTime.Now;
                 user.FailedAttempts = 0;
                 ctx.Entry(user).State = System.Data.Entity.EntityState.Modified;
                 ctx.SaveChanges();
@@ -115,9 +117,83 @@ namespace BAIproject1.Controllers
             ViewBag.LastSuccessfulLogon = user.SuccessfulLogin;
             return View(user);
         }
-        public ActionResult Settings()
+        public ActionResult Register(string login = "", string password = "")
         {
+            using (BaiDbContext ctx = new BaiDbContext())
+            {
+                if (login == "" || password == "")
+                {
+                    ModelState.AddModelError("error", "login i hasło nie mogą być puste");
+                    return View();
+                }
+                if (password.Length < 8)
+                {
+                    ModelState.AddModelError("error", "hasło musi mieć długość co najmniej 8 znaków");
+                    return View();
+                }
+                if (ctx.Users.Any(u => u.Name.ToLower() == login.ToLower()))
+                {
+                    ModelState.AddModelError("exists", "użytkownik o podanym loginie istnieje");
+                    return View();
+                }
+                Random rand = new Random();
+                User currentUser = new User() { Name = login, Activated = true, Password = password, MaxFailedAttempts = 3 };
+                ctx.Entry(currentUser).State = System.Data.Entity.EntityState.Added;
+                ctx.SaveChanges();
+
+                for (int k = 0; k < 15; k++)
+                {
+                    int lengthMask = rand.Next(5, 8);
+                    int lengthPasswd = 0;
+                    if (currentUser.Activated)
+                    {
+                        lengthPasswd = currentUser.Password.Length;
+                        if (lengthMask > lengthPasswd / 2) lengthMask = lengthPasswd / 2;
+                        if (lengthMask < 5) lengthMask = 5;
+                    }
+                    else
+                        lengthPasswd = rand.Next(8, 16);
+
+                    List<int> rest = new List<int>();
+                    for (int i = 0; i < lengthPasswd; i++)
+                    {
+                        rest.Add(i);
+                    }
+
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < lengthPasswd; i++)
+                    {
+                        sb.Append('0');
+                    }
+                    for (int i = 0; i < lengthMask; i++)
+                    {
+                        int r = rand.Next(rest.Count);
+                        sb[rest[r]] = '1';
+                        rest.RemoveAt(r);
+                    }
+                    string mask = sb.ToString();
+                    StringBuilder passwdHash = new StringBuilder();
+                    for (int i = 0; i < lengthPasswd; i++)
+                    {
+                        if(mask[i] == '1')
+                        {
+                            passwdHash.Append(i + password[i].ToString());
+                        }
+                    }
+                    if (currentUser.Masks == null)
+                        currentUser.Masks = new List<Mask>();
+                    currentUser.Masks.Add(new Mask() { MaskString = mask, HashPassword = Utils.getHashSha256(passwdHash.ToString()) });
+                }
+                ctx.Entry(currentUser).State = System.Data.Entity.EntityState.Modified;
+                ctx.SaveChanges();
+
+                ModelState.AddModelError("created", string.Format("Gratulacje użytkownik {0} został utworzony",currentUser.Name));
+            }
+
+            
             return View();
         }
+
+        
     }
 }
