@@ -177,7 +177,7 @@ namespace BAIproject1.Controllers
                     {
                         if(mask[i] == '1')
                         {
-                            passwdHash.Append(i + password[i].ToString());
+                            passwdHash.Append((i+1) + password[i].ToString());
                         }
                     }
                     if (currentUser.Masks == null)

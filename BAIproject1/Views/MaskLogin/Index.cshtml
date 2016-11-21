@@ -3,42 +3,49 @@
     ViewBag.Title = "Index";
 }
 
-
-<form action="/masklogin/index" method="get" name="aaa">
-
-    <div class="form-horizontal">
+@if (ViewBag.PasswordMask == null)
+{
+    <form action="/masklogin/index" method="get">
         <h4>Wpisz login</h4>
         <hr />
-        <div class="form-group">
-            @Html.ValidationMessage("error", new { @class = "text-danger" })
-        </div>
-        <div class="form-group">
-            @Html.ValidationMessage("blocked", new { @class = "text-danger" })
-        </div>
-        <div class="form-group">
-            @Html.ValidationMessage("attempts", new { @class = "text-danger" })
-        </div>
-        <div class="form-group">
-            @Html.ValidationMessage("delay", new { @class = "text-danger" })
-        </div>
+        <div class="form-horizontal">
 
-        @if (ViewBag.PasswordMask == null)
-        {
+
             <div class="form-group">
                 @Html.Label("username", htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
                     @Html.TextBox("login")
                 </div>
             </div>
-        }
-        @*<div class="form-group">
-                <div class="col-md-offset-2 col-md-10">
-                    <input type="submit" value="Logowanie" class="btn btn-default" />
-                </div>
-            </div>*@
 
-        @if (ViewBag.PasswordMask != null)
-        {
+        </div>
+    </form>
+}
+    @*<div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Logowanie" class="btn btn-default" />
+            </div>
+        </div>*@
+
+    @if (ViewBag.PasswordMask != null)
+    {
+
+        <form action="/masklogin/login" method="get">
+            <h4>Wypełnij pola</h4>
+            <hr />
+            <div class="form-group">
+                @Html.ValidationMessage("error", new { @class = "text-danger" })
+            </div>
+            <div class="form-group">
+                @Html.ValidationMessage("blocked", new { @class = "text-danger" })
+            </div>
+            <div class="form-group">
+                @Html.ValidationMessage("attempts", new { @class = "text-danger" })
+            </div>
+            <div class="form-group">
+                @Html.ValidationMessage("delay", new { @class = "text-danger" })
+            </div>
+            @Html.Label("username", htmlAttributes: new { @class = "control-label col-md-2", @hidden = "hidden" })
             <table class="table">
                 <tr>
                     @for (int i = 0; i < ViewBag.PasswordMask.Count; i++)
@@ -54,26 +61,23 @@
                         if (ViewBag.PasswordMask[i])
                         {
                             <td>
-                                <input type="text" size="1" maxlength="1" name="@("p"+i)" />
+                                <input type="text" size="1" maxlength="1" name="@("p" + i)" />
                             </td>
                         }
                         else
                         {
                             <td>
-                                <input type="text" disabled="disabled" size="1" name="@("p"+i)" />
+                                <input type="text" disabled="disabled" size="1" name="@("p" + i)" />
                             </td>
                         }
                     }
                 </tr>
             </table>
-        }
-        <input type="submit" value="zaloguj" class="btn btn-default" />
 
+            <input type="submit" value="zaloguj" class="btn btn-default" />
+        </form>
+    }
 
-
+    <div>
+        @Html.ActionLink("Back to List", "Index")
     </div>
-</form>
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
-</div>
