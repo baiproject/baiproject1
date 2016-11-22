@@ -21,14 +21,17 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("Logowanie", "index","login")</li>
+                    <li>@Html.ActionLink("Logowanie", "index", "login")</li>
                     <li>@Html.ActionLink("Logowanie maskowane", "index", "masklogin")</li>
-                    @if (@Request.Cookies["username"] != null)
+                    @if (@Request.Cookies["username"] != null && @Request.Cookies["token"] != null)
                     {
-                        <li>@Html.ActionLink("zalogowany " + @Request.Cookies["username"].Value, "info","login")</li>
-                        <li>@Html.ActionLink("Logout", "Logout", "Home")</li>
+                        if (BAIproject1.Models.Utils.IsLogged(Request.Cookies["token"].Value, Request.Cookies["username"].Value))
+                        {
+                            <li>@Html.ActionLink("zalogowany " + @Request.Cookies["username"].Value, "info", "login")</li>
+                            <li>@Html.ActionLink("Logout", "Logout", "Home")</li>
+                        }
                     }
-                    
+
                 </ul>
             </div>
         </div>

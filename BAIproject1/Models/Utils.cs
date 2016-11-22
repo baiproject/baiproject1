@@ -21,5 +21,13 @@ namespace BAIproject1.Models
             }
             return sb.ToString();
         }
+        
+        public static bool IsLogged(string token, string username)
+        {
+            using (BaiDbContext ctx = new BaiDbContext())
+            {
+                return ctx.Users.Any(u => u.Name == username && u.LoginToken == token);
+            }
+        }        
     }
 }
