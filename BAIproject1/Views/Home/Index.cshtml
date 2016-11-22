@@ -19,26 +19,7 @@
         <th></th>
     </tr>
 
-@*@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.User.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Text)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "index", new { editid=item.Id }) |            
-            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
-            <form action="Home/Permission">
-                <input name="messageId" hidden="hidden" value="@item.Id" />
-                @Html.DropDownList("userId", (List<SelectListItem>)(ViewBag.users))
-                <button name = "permission" type="submit" value="grant">daj uprawnienia</button>
-                <button name = "permission" type="submit" value="deny">zabierz uprawnienia</button>
-            </form>            
-        </td>
-    </tr>
-}*@
+
 
     @for(int i = 0; i < Model.Count(); i++)
     {
@@ -50,8 +31,7 @@
                 @Html.DisplayFor(modelItem => Model.ElementAt(i).Text)
             </td>
             <td>
-                @*@Html.ActionLink("Edit", "index", new { editid = Model.ElementAt(i).Id }, new { hidden = ViewBag.mod2[i] }) 
-                @Html.ActionLink("Delete", "Delete", new { id = Model.ElementAt(i).Id }, new { hidden = ViewBag.mod2[i] })*@
+                
                 <a href="/?editid=@Model.ElementAt(i).Id" @ViewBag.mod2[i]>Edit</a>
                 <a href="/Home/Delete/@Model.ElementAt(i).Id" @ViewBag.mod[i]>Delete</a>
                 <form action="Home/Permission" @ViewBag.mod[i]>

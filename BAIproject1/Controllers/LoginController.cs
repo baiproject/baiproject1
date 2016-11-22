@@ -33,6 +33,7 @@ namespace BAIproject1.Controllers
                             {
                                 string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
                                 user.LoginToken = token;
+                                user.SuccessfulLogin = DateTime.Now;
                                 ctx.Entry<User>(user).State = System.Data.Entity.EntityState.Modified;
                                 ctx.SaveChanges();
                                 Response.Cookies.Add(new HttpCookie("token", token));
@@ -109,7 +110,6 @@ namespace BAIproject1.Controllers
                 user = ctx.Users.Single(u => u.Name == username);
                 ViewBag.SuccessfulLogin = user.SuccessfulLogin;
                 ViewBag.FailedAttempts = user.FailedAttempts;
-                user.SuccessfulLogin = DateTime.Now;
                 user.FailedAttempts = 0;
                 ctx.Entry(user).State = System.Data.Entity.EntityState.Modified;
                 ctx.SaveChanges();

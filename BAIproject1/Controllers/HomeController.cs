@@ -19,9 +19,11 @@ namespace BAIproject1.Controllers
             List<AllowedMessages> am = null;
 
             string username = "";
+            string token = "";
             try
             {
                 username = Request.Cookies["username"].Value;
+                token = Request.Cookies["token"].Value;
             }
             catch (Exception)
             {
@@ -30,7 +32,7 @@ namespace BAIproject1.Controllers
             {
                 try
                 {
-                    user = ctx.Users.Single(u => u.Name == username);
+                    user = ctx.Users.Single(u => u.Name == username && u.LoginToken == token);
                 }catch (Exception)
                 {                                        
                 }
@@ -79,16 +81,18 @@ namespace BAIproject1.Controllers
         public ActionResult Create(string text)
         {
             string username = "";
+            string token = "";
             try
             {
                 username = Request.Cookies["username"].Value;
+                token = Request.Cookies["token"].Value;
             }
             catch (Exception)
             {
             }            
             using (BaiDbContext ctx = new BaiDbContext())
             {
-                if (ctx.Users.Any<User>(u => u.Name == username))
+                if (ctx.Users.Any<User>(u => u.Name == username && u.LoginToken == token))
                 {
                     User user = ctx.Users.Single(u => u.Name == username);
                     user.Messages.Add(new Message() { Text = text });
@@ -122,11 +126,14 @@ namespace BAIproject1.Controllers
         [HttpGet]
         public ActionResult Delete(int id)
         {
-            if (Request.Cookies["username"] == null)
+            if (Request.Cookies["username"] == null || Request.Cookies["token"] == null)
                 return RedirectToAction("index");
             string username = Request.Cookies["username"].Value;
+            string token = Request.Cookies["token"].Value;
             using (BaiDbContext ctx = new BaiDbContext())
             {
+                if (!ctx.Users.Any(u => u.Name == username && u.LoginToken == token))
+                    return RedirectToAction("index");
                 User user = ctx.Users.Single(u => u.Name == username);
                 Message message = ctx.Messages.Include("user").Where(m => m.Id == id).First();
 
@@ -149,16 +156,20 @@ namespace BAIproject1.Controllers
             }
 
             string username = "";
+            string token = "";
             try
             {
                 username = Request.Cookies["username"].Value;
+                token = Request.Cookies["token"].Value;
             }
             catch (Exception)
             {
             }
 
             using (BaiDbContext ctx = new BaiDbContext())
-            {                
+            {
+                if (!ctx.Users.Any(u => u.Name == username && u.LoginToken == token))
+                    return RedirectToAction("index");
                 int ownerId = ctx.Users.Single(u => u.Name == username).Id;
                 if(!ctx.Messages.Any(m => m.UserId == ownerId && m.Id == messageId))
                 {
@@ -198,11 +209,14 @@ namespace BAIproject1.Controllers
         {
             if(id == -1)
                 return RedirectToAction("index");
-            if (Request.Cookies["username"] == null)
+            if (Request.Cookies["username"] == null || Request.Cookies["token"] == null)
                 return RedirectToAction("index");
             string username = Request.Cookies["username"].Value;
+            string token = Request.Cookies["token"].Value;
             using (BaiDbContext ctx = new BaiDbContext())
             {
+                if (!ctx.Users.Any(u => u.Name == username && u.LoginToken == token))
+                    return RedirectToAction("index");
                 User user = ctx.Users.Single(u => u.Name == username);
                 Message message = ctx.Messages.Include("user").Where(m => m.Id == id).First();
                 message.Text = text;
@@ -221,6 +235,10 @@ namespace BAIproject1.Controllers
             if (Request.Cookies["username"] != null)
             {
                 Response.Cookies["username"].Expires = DateTime.Now.AddDays(-1);
+            }
+            if (Request.Cookies["token"] != null)
+            {
+                Response.Cookies["token"].Expires = DateTime.Now.AddDays(-1);
             }
             return RedirectToAction("index");
         }
