@@ -32,7 +32,7 @@ namespace BAIproject1.Controllers
                 }
                 else
                 {
-                    ctx.Users.Add(new User() { Name = login, Password = "", MaxFailedAttempts = 3, FailedAttempts = 1, FailedLogin = DateTime.Now, Activated = false });
+                    ctx.Users.Add(new User() { Name = login, Password = "", MaxFailedAttempts = 3, FailedAttempts = 0, Activated = false });
                     ctx.SaveChanges();
                 }
                 currentUser = ctx.Users.Single(u => u.Name == login);

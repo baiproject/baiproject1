@@ -37,13 +37,17 @@ namespace BAIproject1.Controllers
                 {                                        
                 }
                 am = ctx.AllowedMessages.ToList();
-                users = ctx.Users.ToList();
+                if(user != null)
+                    users = ctx.Users.Where(u => u.Activated == true && u.Id != user.Id).ToList();
                 messages = ctx.Messages.Include("user").ToList();
             }
             List<SelectListItem> selectList = new List<SelectListItem>();
-            foreach (var item in users)
+            if (users != null)
             {
-                selectList.Add(new SelectListItem() { Text = item.Name, Value = item.Id + "" });
+                foreach (var item in users)
+                {
+                    selectList.Add(new SelectListItem() { Text = item.Name, Value = item.Id + "" });
+                }
             }
             ViewBag.users = selectList;
             if (editId != -1)
